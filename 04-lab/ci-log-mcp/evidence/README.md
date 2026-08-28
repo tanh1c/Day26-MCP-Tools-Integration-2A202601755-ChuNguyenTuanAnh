@@ -1,6 +1,10 @@
 # Manual Claude Code Evidence
 
-Upload the Claude Code verification screenshot to this directory with the exact filename:
+This directory stores the manual Claude Code verification required to demonstrate that the MCP server can be discovered and used from natural-language requests.
+
+## Screenshot
+
+Upload the screenshot to this directory with the exact filename:
 
 ```text
 claude-code-mcp-verification.png
@@ -12,6 +16,17 @@ Expected final path:
 04-lab/ci-log-mcp/evidence/claude-code-mcp-verification.png
 ```
 
-The screenshot should show Claude Code using the `ci-log-analyst` MCP server from natural-language requests, reading `server://info`, and returning real results from `samples/ci.log` and/or `samples/junit.xml`.
+Once that file is uploaded, it will render automatically below:
 
-The submission README and root `SUBMISSION.md` are already wired to this filename, so after the image is uploaded no documentation edit is required.
+![Claude Code MCP verification](claude-code-mcp-verification.png)
+
+## What the screenshot verifies
+
+- Claude Code is running in the Day26 project.
+- Claude Code uses the `ci-log-analyst` MCP server from a natural-language request.
+- Claude Code reads the `server://info` MCP resource.
+- A CI-log request returns real ERROR entries from `samples/ci.log`.
+- A JUnit request returns the real failing-test information from `samples/junit.xml`.
+- The user does not need to explicitly instruct Claude Code to call a specific MCP tool by name.
+
+No credential, token, API key, password, private key, or `.env` content should appear in this directory.
