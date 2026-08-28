@@ -1,3 +1,16 @@
+# Day26 Submission — Student Information
+
+- **Họ và tên:** Chu Nguyễn Tuấn Anh
+- **MSSV:** 2A202601755
+- **Lab:** Track 3 — Day26 — MCP Tools Integration
+- **Bài nộp chính:** [`04-lab/ci-log-mcp/`](04-lab/ci-log-mcp/README.md)
+- **Submission report:** [`SUBMISSION.md`](SUBMISSION.md)
+- **Final CI:** ✅ GitHub Actions run #4 trên `main`
+
+> Phần `01-function-calling`, `02-mcp-basics`, `03-production` và Weather Agent là tài liệu/ví dụ học tập được giữ lại. Bài nộp cuối để chấm là `04-lab/ci-log-mcp/`.
+
+---
+
 # Phân biệt MCP và Function Calling
 
 Đây là hai khái niệm hay bị nhầm lẫn nhưng thực ra ở **hai tầng khác nhau**, và **bổ sung cho nhau** chứ không thay thế.
