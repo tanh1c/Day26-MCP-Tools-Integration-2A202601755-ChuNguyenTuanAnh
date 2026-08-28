@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "day26-ci-log-mcp"
+version = "2.0.0"
+description = "Day26 hardest-level MCP lab: CI log and JUnit analysis with auth and versioning"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "mcp[cli]==2.1.1",
+  "httpx2>=2.5,<3",
+  "pydantic>=2.12,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.17,<2",
+  "pytest>=8.4,<10",
+  "pytest-asyncio>=1.1,<2",
+  "pytest-cov>=6,<8",
+  "ruff>=0.12,<1",
+]
+
+[project.scripts]
+day26-mcp-server = "ci_log_mcp.server:main"
+day26-mcp-client = "ci_log_mcp.client:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ci_log_mcp*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "strict"
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["ci_log_mcp"]
+warn_unused_ignores = true
+show_error_codes = true

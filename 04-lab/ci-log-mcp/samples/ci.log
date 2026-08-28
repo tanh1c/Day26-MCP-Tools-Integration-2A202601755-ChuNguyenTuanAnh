@@ -1,0 +1,7 @@
+2026-08-28T09:00:00Z INFO checkout completed
+2026-08-28T09:00:02Z INFO installing dependencies
+2026-08-28T09:00:08Z WARNING retrying package index request
+2026-08-28T09:00:12Z ERROR tests/test_checkout.py::test_total FAILED expected 120 got 118
+2026-08-28T09:00:13Z INFO collecting coverage
+2026-08-28T09:00:15Z ERROR mypy ci_log_mcp/core.py:42 incompatible return type
+2026-08-28T09:00:16Z CRITICAL CI job failed

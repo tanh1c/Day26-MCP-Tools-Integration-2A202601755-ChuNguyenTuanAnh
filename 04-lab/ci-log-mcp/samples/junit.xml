@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="day26-demo" tests="3" failures="1" errors="0" skipped="0" time="0.21">
+  <testcase classname="tests.test_core" name="test_search_success" time="0.05" />
+  <testcase classname="tests.test_core" name="test_search_limit" time="0.04" />
+  <testcase classname="tests.test_client" name="test_select_v2" time="0.12">
+    <failure message="expected v2">assert 'search_ci_logs' == 'search_ci_logs_v2'</failure>
+  </testcase>
+</testsuite>
