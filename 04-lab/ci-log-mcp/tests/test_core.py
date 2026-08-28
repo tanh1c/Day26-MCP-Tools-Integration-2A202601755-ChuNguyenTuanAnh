@@ -159,9 +159,7 @@ def test_search_log_v2_marks_lines_without_known_severity_unknown(
 
     result = search_log_v2("build.log", "failed")
 
-    assert result["matches"] == [
-        {"line": 1, "severity": "UNKNOWN", "text": "build failed without severity token"}
-    ]
+    assert result["matches"] == [{"line": 1, "severity": "UNKNOWN", "text": "build failed without severity token"}]
 
 
 def test_analyze_junit_rejects_non_junit_xml(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
