@@ -124,3 +124,49 @@ def test_analyze_junit_returns_counts_and_failure_details(tmp_path: Path, monkey
             "details": "traceback line",
         },
     ]
+
+
+def test_resolve_input_file_rejects_empty_missing_and_directory_paths(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CI_LOG_ROOT", str(tmp_path))
+
+    with pytest.raises(ValueError, match="path must not be empty"):
+        resolve_input_file("   ")
+
+    with pytest.raises(FileNotFoundError, match="does not exist"):
+        resolve_input_file("missing.log")
+
+    directory = tmp_path / "logs"
+    directory.mkdir()
+    with pytest.raises(ValueError, match="not a regular file"):
+        resolve_input_file("logs")
+
+
+def test_search_log_v2_rejects_unsupported_severity(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CI_LOG_ROOT", str(tmp_path))
+    _write(tmp_path / "build.log", "ERROR boom\n")
+
+    with pytest.raises(ValueError, match="unsupported severity"):
+        search_log_v2("build.log", "ERROR", severity="notice")
+
+
+def test_search_log_v2_marks_lines_without_known_severity_unknown(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CI_LOG_ROOT", str(tmp_path))
+    _write(tmp_path / "build.log", "build failed without severity token\n")
+
+    result = search_log_v2("build.log", "failed")
+
+    assert result["matches"] == [
+        {"line": 1, "severity": "UNKNOWN", "text": "build failed without severity token"}
+    ]
+
+
+def test_analyze_junit_rejects_non_junit_xml(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CI_LOG_ROOT", str(tmp_path))
+    _write(tmp_path / "report.xml", "<report />")
+
+    with pytest.raises(ValueError, match="unsupported JUnit root element"):
+        analyze_junit("report.xml")
