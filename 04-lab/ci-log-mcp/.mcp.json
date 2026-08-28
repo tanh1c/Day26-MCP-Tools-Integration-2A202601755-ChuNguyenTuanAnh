@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ci-log-analyst": {
+      "command": "python",
+      "args": ["-m", "ci_log_mcp.server", "--transport", "stdio"]
+    }
+  }
+}

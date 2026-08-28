@@ -1,0 +1,145 @@
+name: Day26 MCP CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/day26-ci.yml"
+      - "04-lab/ci-log-mcp/**"
+      - ".gitignore"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/day26-ci.yml"
+      - "04-lab/ci-log-mcp/**"
+      - ".gitignore"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: day26-mcp-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-and-integration:
+    name: quality-and-integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: 04-lab/ci-log-mcp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: 04-lab/ci-log-mcp/pyproject.toml
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+          mkdir -p reports
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Ruff format
+        run: ruff format --check .
+
+      - name: MyPy strict
+        run: mypy ci_log_mcp
+
+      - name: Pytest with coverage
+        run: |
+          pytest -q \
+            --cov=ci_log_mcp \
+            --cov-report=term-missing \
+            --cov-report=xml:reports/coverage.xml \
+            --cov-fail-under=75 \
+            --junitxml=reports/junit.xml
+
+      - name: Generate ephemeral auth token
+        shell: bash
+        run: |
+          TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+          echo "MCP_AUTH_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          echo "CI_LOG_ROOT=$PWD" >> "$GITHUB_ENV"
+
+      - name: Start authenticated Streamable HTTP server
+        shell: bash
+        run: |
+          nohup python -m ci_log_mcp.server --transport http --host 127.0.0.1 --port 8765 > reports/server.log 2>&1 &
+          echo "$!" > reports/server.pid
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/.well-known/oauth-protected-resource/mcp > reports/protected-resource.json; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat reports/server.log
+          exit 1
+
+      - name: Verify missing and wrong tokens are rejected
+        shell: bash
+        run: |
+          NO_TOKEN_STATUS="$(curl -sS -o reports/no-token.json -w '%{http_code}' \
+            -X POST http://127.0.0.1:8765/mcp \
+            -H 'content-type: application/json' \
+            -H 'accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":1,"method":"ping"}')"
+          test "$NO_TOKEN_STATUS" = "401"
+
+          WRONG_TOKEN_STATUS="$(curl -sS -o reports/wrong-token.json -w '%{http_code}' \
+            -X POST http://127.0.0.1:8765/mcp \
+            -H 'Authorization: Bearer wrong-token-for-ci' \
+            -H 'content-type: application/json' \
+            -H 'accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":2,"method":"ping"}')"
+          test "$WRONG_TOKEN_STATUS" = "401"
+
+      - name: Verify valid token, metadata-first client, and v2 tool
+        shell: bash
+        run: |
+          python -m ci_log_mcp.client \
+            --server-url http://127.0.0.1:8765/mcp \
+            --log-path samples/ci.log \
+            --keyword ERROR \
+            --severity error \
+            --json > reports/client.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path("reports/client.json").read_text(encoding="utf-8"))
+          assert data["selected_tool"] == "search_ci_logs_v2", data
+          assert data["server_info"]["version"] == "2.0.0", data
+          assert data["result"]["api_version"] == "2.0", data
+          assert data["result"]["total_matches"] >= 1, data
+          PY
+
+      - name: Build Docker image
+        run: docker build -t day26-ci-log-mcp:ci .
+
+      - name: Stop HTTP server
+        if: always()
+        shell: bash
+        run: |
+          if [ -f reports/server.pid ]; then
+            kill "$(cat reports/server.pid)" 2>/dev/null || true
+          fi
+
+      - name: Upload CI evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: day26-mcp-ci-evidence
+          path: 04-lab/ci-log-mcp/reports
+          if-no-files-found: warn
+          retention-days: 14
