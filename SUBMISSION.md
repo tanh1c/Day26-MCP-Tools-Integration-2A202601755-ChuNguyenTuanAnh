@@ -73,7 +73,7 @@ Kết quả trên chính `main`:
 
 CI artifact name: `day26-mcp-ci-evidence`.
 
-> Các commit sau verified implementation commit chỉ bổ sung documentation ở root (`README.md`, `SUBMISSION.md`). Workflow được cấu hình chỉ chạy khi thay đổi `.github/workflows/day26-ci.yml`, `04-lab/ci-log-mcp/**` hoặc `.gitignore`, nên documentation-only updates này không làm thay đổi code đã được CI xác nhận và không tiêu tốn thêm CI run.
+> Các commit sau verified implementation commit chỉ bổ sung documentation/evidence. Core implementation vẫn là phiên bản đã được final CI xác nhận.
 
 ## Claude Code verification
 
@@ -97,7 +97,21 @@ Find the ERROR lines in samples/ci.log and tell me which failures matter most.
 Read samples/junit.xml and summarize the failing tests.
 ```
 
-Phần Claude Code là manual client verification; CI đã tự động xác nhận MCP protocol, tools/resources, HTTP authentication, metadata-first selection và Docker build mà không cần lưu credential hoặc Claude account trong repository.
+### Manual Claude Code evidence
+
+Evidence directory: [`04-lab/ci-log-mcp/evidence/`](04-lab/ci-log-mcp/evidence/README.md)
+
+Upload the captured screenshot with this exact path/name:
+
+```text
+04-lab/ci-log-mcp/evidence/claude-code-mcp-verification.png
+```
+
+Direct screenshot link after upload: [`claude-code-mcp-verification.png`](04-lab/ci-log-mcp/evidence/claude-code-mcp-verification.png)
+
+The evidence README is already configured to render that image automatically. No further documentation edit is required after uploading the PNG.
+
+The screenshot verifies the manual part that automated CI cannot replace: Claude Code receives a natural-language request, connects to `ci-log-analyst`, reads `server://info`, calls the MCP server, and returns real data from `samples/ci.log` / `samples/junit.xml`.
 
 ## Important files
 
@@ -108,9 +122,12 @@ Phần Claude Code là manual client verification; CI đã tự động xác nh�
 - `04-lab/ci-log-mcp/tests/` — automated tests.
 - `.github/workflows/day26-ci.yml` — CI pipeline.
 - `04-lab/ci-log-mcp/.mcp.json` — Claude Code stdio configuration.
+- `04-lab/ci-log-mcp/evidence/README.md` — manual Claude Code evidence index.
 
 ## Submission status
 
 **Code + automated verification: READY.**
 
-Repository có đầy đủ implementation, README, student information, submission report, automated evidence và hướng dẫn Claude Code. Nếu giảng viên yêu cầu ảnh/video chứng minh thao tác trực tiếp trong Claude Code, cần thực hiện manual prompt ở trên và chụp lại kết quả; bước đó không thể được GitHub Actions thay thế bằng Claude account của sinh viên.
+**Manual Claude Code verification: captured; upload `claude-code-mcp-verification.png` to the prepared evidence directory to include the screenshot in the repository.**
+
+After that single image upload, the repository contains the implementation, README, student information, submission report, automated CI evidence, Claude Code configuration/instructions, and manual Claude Code screenshot evidence required for submission.
